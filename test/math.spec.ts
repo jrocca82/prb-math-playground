@@ -101,10 +101,10 @@ describe("Mint Tests", () => {
   });
 
   it("Should overflow with normal math", async () => {
-    const amount = ethers.utils.parseEther("10");
+    const amount = ethers.utils.parseEther("100");
 
     //Percentage is 90%
     const percentage = ethers.utils.parseEther("0.9");
-    await expect(token.mathSplit(bob.address, charlie.address, amount, percentage)).to.revertedWithPanic(PANIC_CODES.ARITHMETIC_UNDER_OR_OVERFLOW);
+    await expect(token.mathSplit(amount, percentage)).to.revertedWithPanic(PANIC_CODES.ARITHMETIC_UNDER_OR_OVERFLOW);
   });
 });

@@ -15,21 +15,24 @@ contract Token is ERC20, Ownable {
     }
 
     function prbSplit(address _bob, address _charlie, uint256 _amount, uint256 _percentage) public {
-        uint256 bobAmount = _amount.mul(_percentage);
-        uint256 charlieAmount = _amount - bobAmount;
+        // if _amount = ethers.utils.parseEther("100"), _amount => 100000000000000000000
+        // see tests for example
+        uint256 bobAmount = _amount.mul(_percentage); //90000000000000000000
+        uint256 charlieAmount = _amount - bobAmount; //10000000000000000000
         mint(_bob, bobAmount);
         mint(_charlie, charlieAmount);
-        console.log("CONTRACT BOB", this.balanceOf(_bob));
-        console.log("CONTRACT CHARLIE", this.balanceOf(_charlie));
+        console.log("BOB PRB", this.balanceOf(_bob));
+        console.log("CHARLIE PRB", this.balanceOf(_charlie));
     }
 
-    // Gives underflow/overflow error
-    function mathSplit(address _bob, address _charlie, uint256 _amount, uint256 _percentage) public {
-        uint256 bobAmount = _amount * _percentage;
+    function mathSplit(uint256 _amount, uint256 _percentage) public view {
+        // if _amount = ethers.utils.parseEther("100"), _amount => 100000000000000000000
+        // see tests for example
+        uint256 bobAmount = _amount * _percentage; //9000000000000000000000000000000000000
+
+        //Overflow/underflow error
+        //9000000000000000000000000000000000000 - 100000000000000000000 = math is dumb
         uint256 charlieAmount = _amount - bobAmount;
-        mint(_bob, bobAmount);
-        mint(_charlie, charlieAmount);
-        console.log("CONTRACT BOB", this.balanceOf(_bob));
-        console.log("CONTRACT CHARLIE", this.balanceOf(_charlie));
+        console.log("CHARLIE MATH", charlieAmount);
     }
 }
