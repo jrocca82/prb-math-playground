@@ -10,6 +10,7 @@ import "@nomiclabs/hardhat-etherscan";
 import "hardhat-tracer";
 import "@typechain/ethers-v5";
 import "hardhat-contract-sizer";
+import "@nomicfoundation/hardhat-chai-matchers"
 
 const config: HardhatUserConfig = {
   solidity: {

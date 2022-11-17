@@ -7,13 +7,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
   
-  const contract = await deploy("Hello", {
+  const contract = await deploy("Math", {
     from: deployer,
-    args:["Initial message"],
     log: true
   });
   console.log(`Contract deployed to ${contract.address}`)
 };
 
 export default func;
-func.tags = ["testbed", "_hello"];
+func.tags = ["testbed", "_math"];
