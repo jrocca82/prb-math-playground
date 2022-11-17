@@ -105,6 +105,8 @@ describe("Mint Tests", () => {
 
     //Percentage is 90%
     const percentage = ethers.utils.parseEther("0.9");
-    await expect(token.mathSplit(amount, percentage)).to.revertedWithPanic(PANIC_CODES.ARITHMETIC_UNDER_OR_OVERFLOW);
+    await expect(token.mathSplit(bob.address, charlie.address, amount, percentage)).to.revertedWithPanic(PANIC_CODES.ARITHMETIC_UNDER_OR_OVERFLOW);
+    const bobBalance = await token.balanceOf(bob.address);
+    console.log((ethers.utils.formatEther(bobBalance)))
   });
 });
