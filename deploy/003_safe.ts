@@ -7,7 +7,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
   
-  const contract = await deploy("PRBToken", {
+  const contract = await deploy("SafeToken", {
     from: deployer,
     log: true
   });

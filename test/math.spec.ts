@@ -1,13 +1,13 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { ethers } from "hardhat";
-import { PANIC_CODES }from "@nomicfoundation/hardhat-chai-matchers/panic";
-import { Math, Math__factory, PRBMathTest__factory, PRBMathTest, Token__factory, Token } from "../typechain-types";
+import { PANIC_CODES } from "@nomicfoundation/hardhat-chai-matchers/panic";
+import { Math, Math__factory, PRBMathTest__factory, PRBMathTest, PRBToken__factory, PRBToken, SafeToken__factory, SafeToken } from "../typechain-types";
 import { Wallet } from "ethers";
 
 chai.use(chaiAsPromised);
 const bnOne = ethers.utils.parseEther("5");
-const bnTwo = ethers.utils.parseEther("0.5");
+const bnTwo = ethers.utils.parseEther("4");
 const bnThree = ethers.utils.parseEther("20");
 
 const setupEnvironment = async () => {
@@ -23,13 +23,19 @@ const setupEnvironment = async () => {
 
   const prb = (await prbFactory.deploy()) as unknown as PRBMathTest;
 
-  const tokenFactory: Token__factory = await ethers.getContractFactory(
-    "Token"
+  const prbTokenFactory: PRBToken__factory = await ethers.getContractFactory(
+    "PRBToken"
   );
 
-  const token = (await tokenFactory.deploy()) as unknown as Token;
+  const prbToken = (await prbTokenFactory.deploy()) as unknown as PRBToken;
 
-  return { math, prb, token };
+  const safeTokenFactory: SafeToken__factory = await ethers.getContractFactory(
+    "SafeToken"
+  );
+
+  const safeToken = (await safeTokenFactory.deploy()) as unknown as SafeToken;
+
+  return { math, prb, prbToken, safeToken };
 };
 
 describe("Transfer Tests", () => {
@@ -77,14 +83,16 @@ describe("Transfer Tests", () => {
 });
 
 describe("Mint Tests", () => {
-  let token: Token;
+  let prbToken: PRBToken;
+  let safeToken: SafeToken;
   let bob: Wallet, charlie: Wallet;
-  
+
   before(async () => {
     const env = await setupEnvironment();
     bob = ethers.Wallet.createRandom();
     charlie = ethers.Wallet.createRandom();
-    token = env.token;
+    prbToken = env.prbToken;
+    safeToken= env.safeToken;
   });
 
   it("Should mint 90% to bob, 10% to charlie", async () => {
@@ -92,12 +100,22 @@ describe("Mint Tests", () => {
 
     //Percentage is 90%
     const percentage = ethers.utils.parseEther("0.9");
-    await token.prbSplit(bob.address, charlie.address, amount, percentage);
-    const bobBalance = await token.balanceOf(bob.address);
-    const charlieBalance = await token.balanceOf(charlie.address);
+    await prbToken.prbSplit(bob.address, charlie.address, amount, percentage);
+    const bobBalance = await prbToken.balanceOf(bob.address);
+    const charlieBalance = await prbToken.balanceOf(charlie.address);
 
     expect(Number(ethers.utils.formatEther(bobBalance))).to.equal(90);
     expect(Number(ethers.utils.formatEther(charlieBalance))).to.equal(10);
+  });
+
+  it("Should be safe math", async () => {
+    const amount = ethers.utils.parseEther("100");
+
+    //Percentage is 90%
+    const percentage = ethers.utils.parseEther("0.9");
+    await expect(safeToken.safeSplit(bob.address, charlie.address, amount, percentage)).to.revertedWithPanic(PANIC_CODES.ARITHMETIC_UNDER_OR_OVERFLOW);
+    const bobBalance = await safeToken.balanceOf(bob.address);
+    console.log("Safe bob", Number(ethers.utils.formatEther(bobBalance))); // 0
   });
 
   it("Should overflow with normal math", async () => {
@@ -105,8 +123,8 @@ describe("Mint Tests", () => {
 
     //Percentage is 90%
     const percentage = ethers.utils.parseEther("0.9");
-    await expect(token.mathSplit(bob.address, charlie.address, amount, percentage)).to.revertedWithPanic(PANIC_CODES.ARITHMETIC_UNDER_OR_OVERFLOW);
-    const bobBalance = await token.balanceOf(bob.address);
-    console.log((ethers.utils.formatEther(bobBalance)))
+    await expect(prbToken.mathSplit(bob.address, charlie.address, amount, percentage)).to.revertedWithPanic(PANIC_CODES.ARITHMETIC_UNDER_OR_OVERFLOW);
+    const bobBalance = await prbToken.balanceOf(bob.address);
+    console.log("Math bob", Number(ethers.utils.formatEther(bobBalance))); // 90
   });
 });
